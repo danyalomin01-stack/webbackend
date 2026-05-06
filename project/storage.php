@@ -1,168 +1,86 @@
 <?php
-
-// Простое хранение данных в JSON-файле. Для учебной работы так проще запускать без настройки MySQL.
-define('DATA_FILE', __DIR__ . '/data/users.json');
+const DATA_FILE = __DIR__ . '/data/users.json';
 
 function storage_init() {
   $dir = dirname(DATA_FILE);
-  if (!is_dir($dir)) {
-    mkdir($dir, 0777, true);
-  }
+  if (!is_dir($dir)) mkdir($dir, 0777, true);
   if (!file_exists(DATA_FILE)) {
-    file_put_contents(DATA_FILE, json_encode(array('last_id' => 0, 'users' => array()), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+    file_put_contents(DATA_FILE, json_encode(['last_id'=>0, 'users'=>[]], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
   }
 }
-
 function storage_read() {
   storage_init();
-  $json = file_get_contents(DATA_FILE);
-  $data = json_decode($json, true);
-  if (!is_array($data)) {
-    $data = array('last_id' => 0, 'users' => array());
-  }
-  if (!isset($data['users']) || !is_array($data['users'])) {
-    $data['users'] = array();
-  }
-  if (!isset($data['last_id'])) {
-    $data['last_id'] = count($data['users']);
-  }
-  return $data;
+  $data = json_decode(file_get_contents(DATA_FILE), true);
+  return is_array($data) ? $data : ['last_id'=>0, 'users'=>[]];
 }
-
 function storage_write($data) {
   storage_init();
   file_put_contents(DATA_FILE, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT), LOCK_EX);
 }
-
-function generate_login($id) {
-  return 'user' . $id;
+function base_url() {
+  $script = $_SERVER['SCRIPT_NAME'] ?? '';
+  $dir = rtrim(str_replace('\\', '/', dirname($script)), '/');
+  return ($dir === '' || $dir === '.') ? '' : $dir;
 }
-
-function generate_password($len = 8) {
-  $chars = 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  $pass = '';
-  for ($i = 0; $i < $len; $i++) {
-    $pass .= $chars[random_int(0, strlen($chars) - 1)];
+function url_to($path='') { return base_url() . '/' . ltrim($path, '/'); }
+function read_input() {
+  $raw = file_get_contents('php://input');
+  $ctype = $_SERVER['CONTENT_TYPE'] ?? '';
+  if ($raw && stripos($ctype, 'json') !== false) {
+    $d = json_decode($raw, true);
+    return is_array($d) ? $d : [];
   }
-  return $pass;
+  if ($raw && stripos($ctype, 'xml') !== false) {
+    libxml_use_internal_errors(true);
+    $x = simplexml_load_string($raw);
+    if ($x) return json_decode(json_encode($x), true);
+  }
+  if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+    parse_str($raw, $d);
+    return is_array($d) ? $d : [];
+  }
+  return $_POST;
 }
-
-function all_powers() {
-  return array(
-    'immortality' => 'Бессмертие',
-    'noclip' => 'Прохождение сквозь стены',
-    'levitation' => 'Левитация'
-  );
+function normalize_form($d) {
+  return [
+    'name' => trim($d['name'] ?? ''),
+    'phone' => trim($d['phone'] ?? ''),
+    'email' => trim($d['email'] ?? ''),
+    'comment' => trim($d['comment'] ?? ''),
+    'agree' => !empty($d['agree']) ? '1' : '',
+  ];
 }
-
-function normalize_form_data($data) {
-  $data = is_array($data) ? $data : array();
-  if (isset($data['powers']) && !is_array($data['powers'])) {
-    $data['powers'] = array($data['powers']);
-  }
-  if (!isset($data['powers'])) {
-    $data['powers'] = array();
-  }
-  return array(
-    'name' => trim($data['name'] ?? ''),
-    'email' => trim($data['email'] ?? ''),
-    'year' => trim((string)($data['year'] ?? '')),
-    'gender' => trim($data['gender'] ?? ''),
-    'limbs' => trim((string)($data['limbs'] ?? '')),
-    'powers' => array_values(array_unique(array_map('trim', $data['powers']))),
-    'bio' => trim($data['bio'] ?? ''),
-    'contract' => !empty($data['contract']) ? '1' : ''
-  );
+function validate_form($d) {
+  $d = normalize_form($d);
+  $e = [];
+  if ($d['name'] === '' || !preg_match('/^[а-яёa-z\s\-]{2,80}$/iu', $d['name'])) $e['name'] = 'Введите имя буквами.';
+  if ($d['phone'] === '' || !preg_match('/^[0-9\+\-\s\(\)]{7,25}$/u', $d['phone'])) $e['phone'] = 'Введите корректный телефон.';
+  if (!filter_var($d['email'], FILTER_VALIDATE_EMAIL)) $e['email'] = 'Введите корректный E-mail.';
+  if ($d['comment'] === '') $e['comment'] = 'Напишите комментарий.';
+  if ($d['agree'] !== '1') $e['agree'] = 'Нужно согласиться на обработку данных.';
+  return [$d, $e];
 }
-
-function validate_form_data($data, $need_contract = true) {
-  $data = normalize_form_data($data);
-  $errors = array();
-
-  if ($data['name'] === '' || !preg_match('/^[а-яёa-z\s\-]{2,100}$/iu', $data['name'])) {
-    $errors['name'] = 'Введите имя: только буквы, пробелы и дефис, от 2 до 100 символов.';
-  }
-  if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-    $errors['email'] = 'Введите корректный email.';
-  }
-  $year = intval($data['year']);
-  $cur = intval(date('Y'));
-  if ($year < 1900 || $year > $cur) {
-    $errors['year'] = 'Год рождения должен быть от 1900 до текущего года.';
-  }
-  if (!in_array($data['gender'], array('male', 'female'), true)) {
-    $errors['gender'] = 'Выберите пол.';
-  }
-  if (!in_array($data['limbs'], array('1', '2', '3', '4'), true)) {
-    $errors['limbs'] = 'Выберите количество конечностей.';
-  }
-  $allowed = array_keys(all_powers());
-  foreach ($data['powers'] as $p) {
-    if (!in_array($p, $allowed, true)) {
-      $errors['powers'] = 'Выбрана неверная сверхспособность.';
-      break;
-    }
-  }
-  if ($data['bio'] === '') {
-    $errors['bio'] = 'Заполните биографию.';
-  }
-  if ($need_contract && $data['contract'] !== '1') {
-    $errors['contract'] = 'Нужно согласиться с контрактом.';
-  }
-
-  return array($data, $errors);
+function new_password($len=8) {
+  $chars='abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'; $p='';
+  for($i=0;$i<$len;$i++) $p.=$chars[random_int(0, strlen($chars)-1)];
+  return $p;
 }
-
-function user_create($form) {
+function create_user($form) {
   $data = storage_read();
-  $id = $data['last_id'] + 1;
-  $login = generate_login($id);
-  $password = generate_password();
-  $data['last_id'] = $id;
-  $data['users'][(string)$id] = array(
-    'id' => $id,
-    'login' => $login,
-    'password' => $password,
-    'form' => $form,
-    'created_at' => date('c'),
-    'updated_at' => date('c')
-  );
-  storage_write($data);
-  return $data['users'][(string)$id];
+  $id = intval($data['last_id'] ?? 0) + 1;
+  $user = ['id'=>$id, 'login'=>'user'.$id, 'password'=>new_password(), 'form'=>$form, 'created_at'=>date('c'), 'updated_at'=>date('c')];
+  $data['last_id'] = $id; $data['users'][(string)$id] = $user; storage_write($data); return $user;
 }
-
-function user_update($id, $form) {
-  $data = storage_read();
-  $key = (string)intval($id);
-  if (!isset($data['users'][$key])) {
-    return false;
-  }
-  $data['users'][$key]['form'] = $form;
-  $data['users'][$key]['updated_at'] = date('c');
-  storage_write($data);
-  return $data['users'][$key];
+function load_user($id) { $d=storage_read(); return $d['users'][(string)intval($id)] ?? null; }
+function load_user_by_login($login) { foreach((storage_read()['users'] ?? []) as $u) if(($u['login'] ?? '') === $login) return $u; return null; }
+function update_user($id, $form) { $d=storage_read(); $k=(string)intval($id); if(empty($d['users'][$k])) return null; $d['users'][$k]['form']=$form; $d['users'][$k]['updated_at']=date('c'); storage_write($d); return $d['users'][$k]; }
+function auth_user() {
+  $login = $_SERVER['PHP_AUTH_USER'] ?? '';
+  $pass = $_SERVER['PHP_AUTH_PW'] ?? '';
+  $u = $login ? load_user_by_login($login) : null;
+  return ($u && $u['password'] === $pass) ? $u : null;
 }
-
-function user_load($id) {
-  $data = storage_read();
-  $key = (string)intval($id);
-  return $data['users'][$key] ?? false;
-}
-
-function user_load_by_login($login) {
-  $data = storage_read();
-  foreach ($data['users'] as $u) {
-    if ($u['login'] === $login) {
-      return $u;
-    }
-  }
-  return false;
-}
-
-function public_user($user) {
-  return array(
-    'id' => $user['id'],
-    'login' => $user['login'],
-    'profile' => url('profile/' . $user['id'])
-  );
+function json_response($data, $code=200) {
+  http_response_code($code); header('Content-Type: application/json; charset=utf-8');
+  echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT); exit;
 }
