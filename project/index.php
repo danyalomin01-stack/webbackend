@@ -13,7 +13,22 @@ ini_set('include_path', INCLUDE_PATH);
 
 include('init.php');
 
-$path = isset($_GET['q']) ? $_GET['q'] : trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
+// Определяем путь внутри проекта. Это нужно, потому что на учебном сервере
+// проект обычно лежит не в корне сайта, а в подпапке вроде /otch/project/.
+if (isset($_GET['q'])) {
+  $path = trim($_GET['q'], '/');
+}
+else {
+  $uri_path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+  $base_path = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
+  if ($base_path != '' && $base_path != '/' && strpos($uri_path, $base_path) === 0) {
+    $uri_path = substr($uri_path, strlen($base_path));
+  }
+  $path = trim($uri_path, '/');
+  if ($path == 'index.php') {
+    $path = '';
+  }
+}
 $request = array(
   'url' => $path,
   'method' => isset($_POST['method']) && in_array(strtolower($_POST['method']), array('get', 'post', 'put', 'delete')) ? strtolower($_POST['method']) : strtolower($_SERVER['REQUEST_METHOD']),

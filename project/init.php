@@ -110,17 +110,26 @@ function conf($key) {
 // Формирует сокращенные URL для ссылок или для текущей страницы.
 function url($addr = '', $params = array()) {
   global $conf;
-  // Если вызвали без параметров, до делаем ссылку на текущую страницу.
+  // Если вызвали без параметров, делаем ссылку на текущую страницу.
   if ($addr == '' && isset($_GET['q'])) {
     $addr = strip_tags($_GET['q']);
   }
-  // В зависимоти от настроек проекта генерируем чистые ссылки или ссылки с параметром.
+  $addr = trim(strip_tags($addr), '/');
+  $base = rtrim(conf('basedir'), '/') . '/';
   $clean = conf('clean_urls');
-  $r = $clean ? '/' : '?q=';
-  $r .= strip_tags($addr);
-  // Добавляем параметры.
+
+  if ($clean) {
+    $r = $base . $addr;
+  }
+  else {
+    $r = $base . 'index.php';
+    if ($addr != '') {
+      $r .= '?q=' . $addr;
+    }
+  }
+
   if (count($params) > 0) {
-    $r .= $clean ? '?' : '&';
+    $r .= (strpos($r, '?') === FALSE) ? '?' : '&';
     $r .= implode('&', $params);
   }
   return $r;
@@ -132,7 +141,7 @@ function redirect($l = NULL) {
     $location = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
   }
   else {
-    $location = 'http://' . $_SERVER['HTTP_HOST'] . conf('basedir') . url($l);
+    $location = 'http://' . $_SERVER['HTTP_HOST'] . url($l);
   }
   return array('headers' => array('Location' => $location));
 }
