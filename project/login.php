@@ -22,7 +22,7 @@ if (isset($_GET['logout'])) {
 if (!empty($_SESSION['uid'])) {
     $u = load_user((int)$_SESSION['uid']);
     if ($u) {
-        header('Location: '.url_to('profile/'.$u['id']));
+        header('Location: '.url_to('profile.php?id='.(int)$u['id']));
         exit;
     }
 }
@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             session_regenerate_id(true);
             $_SESSION['uid'] = (int)$u['id'];
             $_SESSION['login'] = $u['login'];
-            header('Location: '.url_to('profile/'.$u['id']));
+            header('Location: '.url_to('profile.php?id='.(int)$u['id']));
             exit;
         }
         $error = 'Неверный логин или пароль.';

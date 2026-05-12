@@ -38,7 +38,7 @@ if ($path === '/api/profile' && $method === 'POST') {
         'message'=>'Заявка сохранена.',
         'login'=>$u['login'],
         'password'=>$u['password'],
-        'profile'=>url_to('profile/'.$u['id']),
+        'profile'=>url_to('profile.php?id='.$u['id']),
         'login_url'=>url_to('login.php')
     ], 201);
 }
@@ -55,7 +55,7 @@ if (preg_match('#^/api/profile/(\d+)$#', $path, $m) && $method === 'PUT') {
     [$form, $errors] = validate_form(read_input());
     if ($errors) json_response(['ok'=>false, 'errors'=>$errors], 400);
     update_user($id, $form);
-    json_response(['ok'=>true, 'message'=>'Данные обновлены.', 'profile'=>url_to('profile/'.$id)]);
+    json_response(['ok'=>true, 'message'=>'Данные обновлены.', 'profile'=>url_to('profile.php?id='.$id)]);
 }
 
 // Страница профиля: теперь обычная форма входа, без браузерного Basic Auth окна
@@ -93,7 +93,7 @@ if ($path === '/' && $method === 'POST') {
     [$form, $errors] = validate_form($_POST);
     if (!$errors) {
         $u = create_user($form);
-        $message = 'Заявка сохранена. Логин: '.$u['login'].' Пароль: '.$u['password'].' Профиль: '.url_to('profile/'.$u['id']);
+        $message = 'Заявка сохранена. Логин: '.$u['login'].' Пароль: '.$u['password'].' Профиль: '.url_to('profile.php?id='.$u['id']);
     }
 }
 

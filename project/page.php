@@ -1,8 +1,8 @@
 <?php
 $base = htmlspecialchars(base_url(), ENT_QUOTES);
 $v = function($name) use ($formData) { return htmlspecialchars($formData[$name] ?? '', ENT_QUOTES); };
-$action = $editMode ? $base.'/profile/'.$profileId : $base.'/';
-$api = $editMode ? $base.'/api/profile/'.$profileId : $base.'/api/profile';
+$action = $editMode ? $base.'/profile.php?id='.$profileId : $base.'/index.php';
+$api = $editMode ? $base.'/api.php?id='.$profileId : $base.'/api.php';
 $methodName = $editMode ? 'PUT' : 'POST';
 ?>
 <!doctype html>
@@ -37,7 +37,7 @@ $methodName = $editMode ? 'PUT' : 'POST';
         <li><a href="#team">О нас</a></li>
         <li><button type="button" class="nav-btn js-open-modal">Связаться</button></li>
         <?php if (!empty($sessionUser)): ?>
-          <li><a href="<?= $base ?>/profile/<?= (int)$sessionUser['id'] ?>">Профиль</a></li>
+          <li><a href="<?= $base ?>/profile.php?id=<?= (int)$sessionUser['id'] ?>">Профиль</a></li>
           <li><a href="<?= $base ?>/login.php?logout=1">Выйти</a></li>
         <?php else: ?>
           <li><a href="<?= $base ?>/login.php">Войти</a></li>
@@ -56,7 +56,7 @@ $methodName = $editMode ? 'PUT' : 'POST';
       <li><a href="#team">О нас</a></li>
       <li><button type="button" class="mobile-contact js-open-modal">Связаться</button></li>
       <?php if (!empty($sessionUser)): ?>
-        <li><a href="<?= $base ?>/profile/<?= (int)$sessionUser['id'] ?>">Профиль</a></li>
+        <li><a href="<?= $base ?>/profile.php?id=<?= (int)$sessionUser['id'] ?>">Профиль</a></li>
         <li><a href="<?= $base ?>/login.php?logout=1">Выйти</a></li>
       <?php else: ?>
         <li><a href="<?= $base ?>/login.php">Войти</a></li>
