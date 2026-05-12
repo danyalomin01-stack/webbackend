@@ -91,7 +91,7 @@ function update_user($id, $form) {
     storage_write($d);
     return $d['users'][$k];
 }
-function auth_user() {
+function auth_user_basic() {
     $login = $_SERVER['PHP_AUTH_USER'] ?? '';
     $pass = $_SERVER['PHP_AUTH_PW'] ?? '';
     $u = $login ? load_user_by_login($login) : null;

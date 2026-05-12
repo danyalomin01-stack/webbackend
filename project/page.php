@@ -36,6 +36,12 @@ $methodName = $editMode ? 'PUT' : 'POST';
         <li><a href="#clients">Реклама</a></li>
         <li><a href="#team">О нас</a></li>
         <li><button type="button" class="nav-btn js-open-modal">Связаться</button></li>
+        <?php if (!empty($sessionUser)): ?>
+          <li><a href="<?= $base ?>/profile/<?= (int)$sessionUser['id'] ?>">Профиль</a></li>
+          <li><a href="<?= $base ?>/login.php?logout=1">Выйти</a></li>
+        <?php else: ?>
+          <li><a href="<?= $base ?>/login.php">Войти</a></li>
+        <?php endif; ?>
       </ul>
       <button type="button" class="burger" aria-label="Меню"><span></span><span></span><span></span></button>
     </nav>
@@ -49,6 +55,12 @@ $methodName = $editMode ? 'PUT' : 'POST';
       <li><a href="#clients">Реклама</a></li>
       <li><a href="#team">О нас</a></li>
       <li><button type="button" class="mobile-contact js-open-modal">Связаться</button></li>
+      <?php if (!empty($sessionUser)): ?>
+        <li><a href="<?= $base ?>/profile/<?= (int)$sessionUser['id'] ?>">Профиль</a></li>
+        <li><a href="<?= $base ?>/login.php?logout=1">Выйти</a></li>
+      <?php else: ?>
+        <li><a href="<?= $base ?>/login.php">Войти</a></li>
+      <?php endif; ?>
     </ul>
 
     <div class="header-grid">
@@ -149,7 +161,8 @@ $methodName = $editMode ? 'PUT' : 'POST';
 
 <footer class="footer" id="contacts">
   <div class="footer-content">
-    <h2>Связаться с нами</h2>
+    <h2><?= $editMode ? 'Редактирование заявки' : 'Связаться с нами' ?></h2>
+    <?php if ($editMode && !empty($sessionUser)): ?><p class="edit-note">Вы вошли как <b><?= htmlspecialchars($sessionUser['login'], ENT_QUOTES) ?></b>. <a href="<?= $base ?>/login.php?logout=1">Выйти</a></p><?php endif; ?>
     <form class="footer-form js-contact-form" method="post" action="<?= $action ?>" data-api="<?= $api ?>" data-method="<?= $methodName ?>">
       <label><input name="name" placeholder="Ваше имя" value="<?= $v('name') ?>" required></label>
       <label><input name="email" type="email" placeholder="Email" value="<?= $v('email') ?>" required></label>
