@@ -3,9 +3,9 @@ header('Content-Type: text/html; charset=UTF-8');
 
 // ─── Настройки БД ──────────────────────────────────────────────
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'uXXXXX');   // ваш логин = имя БД
-define('DB_USER', 'uXXXXX');   // ваш логин
-define('DB_PASS', 'your_pass'); // ваш пароль
+define('DB_NAME', 'u82410');   // ваш логин, он же имя БД
+define('DB_USER', 'u82410');   // ваш логин
+define('DB_PASS', '4348747'); // ваш пароль
 
 // ─── Допустимые значения ───────────────────────────────────────
 $validLanguageIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];

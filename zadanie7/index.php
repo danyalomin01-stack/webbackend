@@ -2,9 +2,9 @@
 header('Content-Type: text/html; charset=UTF-8');
 
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'uXXXXX');
-define('DB_USER', 'uXXXXX');
-define('DB_PASS', 'your_pass');
+define('DB_NAME', 'u82410');   // ваш логин, он же имя БД
+define('DB_USER', 'u82410');   // ваш логин
+define('DB_PASS', '4348747'); // ваш пароль
 
 $validLanguageIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 $validGenders     = ['male', 'female'];

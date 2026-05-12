@@ -3,9 +3,9 @@ header('Content-Type: text/html; charset=UTF-8');
 
 // ─── Настройки БД ──────────────────────────────────────────────
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'uXXXXX');
-define('DB_USER', 'uXXXXX');
-define('DB_PASS', 'your_pass');
+define('DB_NAME', 'u82410');   // ваш логин, он же имя БД
+define('DB_USER', 'u82410');   // ваш логин
+define('DB_PASS', '4348747'); // ваш пароль
 
 function get_db() {
     static $db = null;
