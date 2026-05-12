@@ -1,8 +1,12 @@
-Залить все файлы в /otch/project/ на учебном сервере.
+Залить все файлы в /otch/project/.
 Открывать: http://u82410.kubsu-dev.ru/otch/project/
 
-API:
-POST /otch/project/api/profile - создание заявки, JSON или XML.
-PUT  /otch/project/api/profile/{id} - изменение заявки после Basic Auth.
+Фронт сделан не картинкой, а обычной HTML-версткой по прошлому React/Vite сайту.
+Меню, бургер, модальное окно, тарифы, FAQ и формы кликабельные.
 
-Данные сохраняются в data/users.json. Если сервер ругается на запись, дать папке data права 755 или 777.
+API:
+POST /otch/project/api/profile
+PUT  /otch/project/api/profile/{id}
+
+Данные сохраняются в data/users.json.
+Если сохранение не работает, дать папке data права 755 или 777 на учебном сервере.
